@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Lingkungan Pasien IoT</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .header { text-align: center; color: #333; }
+        .dashboard { display: flex; justify-content: space-around; flex-wrap: wrap; margin-top: 30px; }
+        .card { 
+            background: white; 
+            padding: 20px; 
+            margin: 10px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            min-width: 250px; 
+            text-align: center;
+        }
+        .value { font-size: 3em; font-weight: bold; color: #007bff; }
+        .label { color: #6c757d; margin-top: 5px; }
+        .status-good { color: green; font-weight: bold; }
+        .status-bad { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏥 Dashboard Monitoring Lingkungan Pasien</h1>
+        <p>Data Terakhir Diperbarui: <span id="timestamp">--:--</span></p>
+    </div>
+
+    <div class="dashboard">
+        <div class="card">
+            <div class="value" id="temp-value">--</div>
+            <div class="label">Suhu (°C)</div>
+        </div>
+
+        <div class="card">
+            <div class="value" id="humi-value">--</div>
+            <div class="label">Kelembapan (%)</div>
+        </div>
+
+        <div class="card">
+            <div class="value" id="air-status">--</div>
+            <div class="label">Kualitas Udara</div>
+            <p><small>(Nilai Polutan: <span id="airq-raw">--</span>)</small></p>
+        </div>
+    </div>
+
+    <script>
+        function fetchLatestData() {
+            fetch('/api/latest_data')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'no_data') {
+                        document.getElementById('temp-value').textContent = 'N/A';
+                        document.getElementById('humi-value').textContent = 'N/A';
+                        document.getElementById('air-status').textContent = 'N/A';
+                        return;
+                    }
+
+                    document.getElementById('temp-value').textContent = data.temperature.toFixed(1);
+                    document.getElementById('humi-value').textContent = data.humidity.toFixed(1);
+                    document.getElementById('timestamp').textContent = data.timestamp;
+
+                    const airQuality = data.air_quality;
+                    const airStatusEl = document.getElementById('air-status');
+                    document.getElementById('airq-raw').textContent = airQuality.toFixed(0);
+
+                    // Aturan sederhana: sesuaikan nilai 200 ini berdasarkan kalibrasi sensor MQ-135 Anda
+                    if (airQuality < 200) {
+                        airStatusEl.textContent = 'BAIK';
+                        airStatusEl.className = 'value status-good';
+                    } else {
+                        airStatusEl.textContent = 'BURUK';
+                        airStatusEl.className = 'value status-bad';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        fetchLatestData();
+        // Pembaruan real-time setiap 5 detik
+        setInterval(fetchLatestData, 5000); 
+    </script>
+</body>
+</html>
