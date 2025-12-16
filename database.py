@@ -1,22 +1,24 @@
-import sqlite3
+from sqlalchemy import create_engine, Column, Integer, Float, Boolean, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+import datetime
 
-DATABASE_NAME = 'environment_data.db'
 
-def init_db():
-    conn = sqlite3.connect(DATABASE_NAME)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS environment_data (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-            temperature REAL NOT NULL,
-            humidity REAL NOT NULL,
-            air_quality REAL NOT NULL
-        )
-    """)
-    conn.commit()
-    conn.close()
+DATABASE_URL = "mysql+pymysql://root:@localhost/iot_project"
 
-if __name__ == '__main__':
-    init_db()
-    print(f"Database {DATABASE_NAME} siap.")
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+class SensorReading(Base):
+    __tablename__ = "sensor_data"
+
+    id = Column(Integer, primary_key=True, index=True)
+    temperature = Column(Float)
+    gas_level = Column(Float)  # Dari MQ-135
+    light_level = Column(Integer) # Dari LDR
+    motion_detected = Column(Boolean) # Dari PIR
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+# Membuat tabel secara otomatis jika belum ada
+Base.metadata.create_all(bind=engine)
