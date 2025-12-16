@@ -5,7 +5,7 @@ import datetime
 # import dari file database kamu
 from database import SessionLocal, SensorReading
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 # Dependency DB session
 def get_db():
@@ -91,5 +91,5 @@ def get_latest_data():
     return jsonify({'status': 'no_data'})
 
 
-if _name_ == '_main_':
+if __name__ == '__main__':
     app.run(debug=True)
