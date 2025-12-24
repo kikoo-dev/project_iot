@@ -221,15 +221,55 @@
         <div class="label">Kelembapan Ruangan (%)</div>
       </div>
 
+      <!-- Air quality sensor removed: not used in this setup -->
+
       <div class="card">
-        <div class="icon-wrapper" style="background-color: var(--good)">
-          <i data-feather="wind" style="width: 24px; height: 24px"></i>
+        <div class="icon-wrapper" style="background-color: var(--secondary)">
+          <i data-feather="activity" style="width: 24px; height: 24px"></i>
         </div>
-        <div class="value" id="air-status">--</div>
-        <div class="label">Kualitas Udara</div>
-        <div class="airq-info">
-          Tingkat Polutan: <span id="airq-raw" class="airq-raw">--</span>
+        <div class="value" id="motion-value">--</div>
+        <div class="label">Gerakan (count)</div>
+      </div>
+
+      <div class="card">
+        <div class="icon-wrapper" style="background-color: #f59e0b">
+          <i data-feather="sun" style="width: 24px; height: 24px"></i>
         </div>
+        <div class="value" id="light-status">--</div>
+        <div class="label">Cahaya (Malem/Siang)</div>
+        <div class="airq-info">Nilai LDR: <span id="ldr-raw">--</span></div>
+      </div>
+
+      <div class="card">
+        <div class="icon-wrapper" style="background-color: #ef4444">
+          <i data-feather="circle" style="width: 24px; height: 24px"></i>
+        </div>
+        <div class="value" id="led-red">--</div>
+        <div class="label">LED Merah (Suhu tinggi)</div>
+      </div>
+
+      <div class="card">
+        <div class="icon-wrapper" style="background-color: #3b82f6">
+          <i data-feather="circle" style="width: 24px; height: 24px"></i>
+        </div>
+        <div class="value" id="led-blue">--</div>
+        <div class="label">LED Biru (Gerakan berlebih)</div>
+      </div>
+
+      <div class="card">
+        <div class="icon-wrapper" style="background-color: #f59e0b">
+          <i data-feather="circle" style="width: 24px; height: 24px"></i>
+        </div>
+        <div class="value" id="led-yellow">--</div>
+        <div class="label">LED Kuning (Humidity abnormal)</div>
+      </div>
+
+      <div class="card">
+        <div class="icon-wrapper" style="background-color: #f3f4f6">
+          <i data-feather="circle" style="width: 24px; height: 24px"></i>
+        </div>
+        <div class="value" id="led-white">--</div>
+        <div class="label">LED Putih (Malam hari)</div>
       </div>
     </div>
 
@@ -309,62 +349,79 @@
 
       /* REALTIME DATA FETCH */
       function fetchLatestData() {
-        // Simulasi data dari API
-        const dummyData = {
-          temperature: 36.5 + (Math.random() * 2 - 1), // 35.5 - 37.5
-          humidity: 50 + (Math.random() * 20 - 10), // 40 - 60
-          air_quality: 100 + Math.random() * 200, // 100 - 300
-          timestamp: new Date().toLocaleTimeString("id-ID"),
-        };
+        // Fetch latest data from backend
+        fetch("/api/latest_data")
+          .then((res) => res.json())
+          .then((data) => {
+            if (!data || data.status === "no_data") return;
 
-        // Ganti dengan fetch asli jika API sudah tersedia
-        // fetch('/api/latest_data')
-        // .then(res => res.json())
-        // .then(data => { ... }
-        const data = dummyData;
+            // Temperature / Humidity / Timestamp
+            if (data.temperature != null) {
+              document.getElementById("temp-value").textContent = Number(
+                data.temperature
+              ).toFixed(1);
+            }
+            if (data.humidity != null) {
+              document.getElementById("humi-value").textContent = Number(
+                data.humidity
+              ).toFixed(1);
+            }
+            document.getElementById("timestamp").textContent =
+              data.timestamp || new Date().toLocaleTimeString();
 
-        // if (data.status === 'no_data') return; // Untuk fetch asli
+            // Air quality removed from UI (not used)
 
-        // Update text values
-        document.getElementById("temp-value").textContent =
-          data.temperature.toFixed(1);
-        document.getElementById("humi-value").textContent =
-          data.humidity.toFixed(1);
-        document.getElementById("timestamp").textContent = data.timestamp;
+            // motion
+            const motionEl = document.getElementById("motion-value");
+            motionEl.textContent =
+              data.motion_count != null
+                ? data.motion_count
+                : data.motion_detected
+                ? "1"
+                : "0";
 
-        const airQuality = data.air_quality;
-        document.getElementById("airq-raw").textContent = airQuality.toFixed(0);
-        const airStatusEl = document.getElementById("air-status");
+            // light / LDR
+            const ldrRaw = document.getElementById("ldr-raw");
+            ldrRaw.textContent =
+              data.ldr != null ? Number(data.ldr).toFixed(0) : "--";
+            const lightStatusEl = document.getElementById("light-status");
+            if (data.ldr != null) {
+              const ldrVal = Number(data.ldr);
+              lightStatusEl.textContent = ldrVal < 400 ? "MALAM" : "SIANG";
+            }
 
-        // Logic Kualitas Udara yang lebih ketat
-        if (airQuality < 150) {
-          airStatusEl.textContent = "SANGAT BAIK";
-          airStatusEl.className = "value status-good";
-        } else if (airQuality >= 150 && airQuality < 300) {
-          // Kita bisa menambahkan warna peringatan jika ingin
-          airStatusEl.textContent = "MODERAT";
-          airStatusEl.className = "value"; // Kembali ke warna teks default
-        } else {
-          airStatusEl.textContent = "BURUK";
-          airStatusEl.className = "value status-bad";
-        }
+            // LED states
+            function setLedText(id, val) {
+              const el = document.getElementById(id);
+              if (!el) return;
+              el.textContent = val ? "ON" : "OFF";
+              el.className = val ? "value status-bad" : "value";
+            }
 
-        // Update chart
-        let timeLabel = new Date().toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        });
-        tempChart.data.labels.push(timeLabel);
-        tempChart.data.datasets[0].data.push(data.temperature);
+            setLedText("led-red", data.led_red);
+            setLedText("led-blue", data.led_blue);
+            setLedText("led-yellow", data.led_yellow);
+            setLedText("led-white", data.led_white);
 
-        // Batasi titik data menjadi 15
-        if (tempChart.data.labels.length > 15) {
-          tempChart.data.labels.shift();
-          tempChart.data.datasets[0].data.shift();
-        }
-
-        tempChart.update();
+            // Update chart with temperature
+            if (data.temperature != null) {
+              const timeLabel = new Date().toLocaleTimeString("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              });
+              tempChart.data.labels.push(timeLabel);
+              tempChart.data.datasets[0].data.push(Number(data.temperature));
+              if (tempChart.data.labels.length > 15) {
+                tempChart.data.labels.shift();
+                tempChart.data.datasets[0].data.shift();
+              }
+              tempChart.update();
+            }
+          })
+          .catch((err) => {
+            console.error("fetch latest_data failed", err);
+          });
       }
 
       fetchLatestData();

@@ -31,38 +31,37 @@ def post_data():
 
         temperature = data.get('temperature')
         humidity = data.get('humidity')
-        gas_level = data.get('gas_level')
+        # Only accept sensors for this setup: DHT, LDR, PIR and LED states
         light_level = data.get('light_level')
-        motion_detected = data.get('motion_detected')
-        # Optional/extended fields
-        air_quality = data.get('air_quality')
-        distance = data.get('distance')
-        sound_level = data.get('sound_level')
-        mq135 = data.get('mq135')
         ldr = data.get('ldr')
-        mic = data.get('mic')
+        motion_detected = data.get('motion_detected')
+        motion_count = data.get('motion_count')
+        # incoming actuator states (raspberry can compute and send)
+        led_red = data.get('led_red')
+        led_blue = data.get('led_blue')
+        led_yellow = data.get('led_yellow')
+        led_white = data.get('led_white')
 
-        # Basic validation: required core fields
-        if None in [temperature, gas_level, light_level, motion_detected]:
+        # Basic validation: required core fields for this setup
+        if None in [temperature, humidity, light_level, motion_detected]:
             return jsonify({
                 'status': 'error',
-                'message': 'Missing core data fields (temperature, gas_level, light_level, motion_detected)'
+                'message': 'Missing core data fields (temperature, humidity, light_level, motion_detected)'
             }), 400
 
         db: Session = get_db()
 
         sensor_data = SensorReading(
             temperature=temperature,
-            gas_level=gas_level,
-            light_level=light_level,
-            motion_detected=motion_detected,
             humidity=humidity,
-            air_quality=air_quality,
-            distance=distance,
-            sound_level=sound_level,
-            mq135=mq135,
+            light_level=light_level,
             ldr=ldr,
-            mic=mic
+            motion_detected=motion_detected,
+            motion_count=motion_count,
+            led_red=led_red,
+            led_blue=led_blue,
+            led_yellow=led_yellow,
+            led_white=led_white
         )
 
         db.add(sensor_data)
@@ -98,15 +97,14 @@ def get_latest_data():
             'id': data.id,
             'temperature': data.temperature,
             'humidity': data.humidity,
-            'gas_level': data.gas_level,
             'light_level': data.light_level,
-            'motion_detected': data.motion_detected,
-            'air_quality': data.air_quality,
-            'distance': data.distance,
-            'sound_level': data.sound_level,
-            'mq135': data.mq135,
             'ldr': data.ldr,
-            'mic': data.mic,
+            'motion_detected': data.motion_detected,
+            'motion_count': data.motion_count,
+            'led_red': bool(data.led_red),
+            'led_blue': bool(data.led_blue),
+            'led_yellow': bool(data.led_yellow),
+            'led_white': bool(data.led_white),
             'timestamp': data.created_at.strftime('%H:%M:%S, %d %b')
         })
 

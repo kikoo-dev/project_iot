@@ -24,17 +24,17 @@ class SensorReading(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     temperature = Column(Float, nullable=False)
-    gas_level = Column(Float, nullable=False)
-    light_level = Column(Integer, nullable=False)
-    motion_detected = Column(Boolean, nullable=False)
-    # Additional optional fields
+    # Sensors used: DHT (temperature, humidity), LDR (light), PIR (motion)
     humidity = Column(Float, nullable=True)
-    air_quality = Column(Float, nullable=True)
-    distance = Column(Float, nullable=True)
-    sound_level = Column(Float, nullable=True)
-    mq135 = Column(Float, nullable=True)
+    light_level = Column(Integer, nullable=False)
     ldr = Column(Float, nullable=True)
-    mic = Column(Float, nullable=True)
+    motion_detected = Column(Boolean, nullable=False)
+    motion_count = Column(Integer, nullable=True, default=0)
+    # LED actuator states
+    led_red = Column(Boolean, nullable=True, default=False)
+    led_blue = Column(Boolean, nullable=True, default=False)
+    led_yellow = Column(Boolean, nullable=True, default=False)
+    led_white = Column(Boolean, nullable=True, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 
