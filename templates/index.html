@@ -3,429 +3,420 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>🏥 Dashboard Monitoring Pasien IoT</title>
-
+    <title>🏥 Patient Monitoring System</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
-      /* Variabel Warna dan Gaya */
       :root {
-        --primary: #3b82f6; /* Biru Neon */
-        --secondary: #6366f1; /* Ungu */
-        --bg: #f9fafb; /* Latar Belakang Sangat Terang */
-        --card: #ffffff; /* Kartu Putih */
-        --text: #1f2937; /* Teks Gelap */
-        --subtext: #6b7280; /* Teks Abu-abu */
-
-        --good: #10b981; /* Hijau Emerald */
-        --bad: #ef4444; /* Merah */
-
-        /* Shadow Modern */
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-          0 2px 4px -2px rgba(0, 0, 0, 0.06);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
-          0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        --primary: #3b82f6;
+        --secondary: #6366f1;
+        --bg: #f3f4f6;
+        --card: #ffffff;
+        --text: #1f2937;
+        --subtext: #6b7280;
+        --good: #10b981;
+        --bad: #ef4444;
+        --sidebar: #1e293b;
+        --sidebar-text: #f1f5f9;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       }
 
-      /* Dark Mode */
       body.dark {
-        --bg: #0f172a; /* Latar Belakang Sangat Gelap */
-        --card: #1e293b; /* Kartu Agak Gelap */
-        --text: #f1f5f9; /* Teks Putih Pudar */
-        --subtext: #94a3b8; /* Teks Abu-abu Terang */
-        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5),
-          0 2px 4px -2px rgba(0, 0, 0, 0.3);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5),
-          0 4px 6px -4px rgba(0, 0, 0, 0.3);
+        --bg: #0f172a;
+        --card: #1e293b;
+        --text: #f1f5f9;
+        --subtext: #94a3b8;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
       }
 
-      /* Reset dan Dasar */
+      * {
+        box-sizing: border-box;
+      }
       body {
         font-family: "Inter", sans-serif;
         background: var(--bg);
         margin: 0;
-        padding: 25px;
+        display: flex;
         color: var(--text);
-        transition: background 0.4s ease-in-out, color 0.4s ease-in-out;
-        min-height: 100vh;
+        transition: all 0.3s ease;
       }
 
-      /* Header */
+      /* Sidebar Navigation */
+      .sidebar {
+        width: 260px;
+        background: var(--sidebar);
+        height: 100vh;
+        position: fixed;
+        padding: 30px 20px;
+        color: var(--sidebar-text);
+        z-index: 100;
+      }
+
+      .sidebar h2 {
+        font-size: 1.2rem;
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        border-radius: 10px;
+        transition: 0.3s;
+        color: #94a3b8;
+      }
+
+      .nav-item:hover,
+      .nav-item.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .nav-item i {
+        margin-right: 12px;
+        width: 20px;
+      }
+
+      /* Main Content Area */
+      .main-content {
+        margin-left: 260px;
+        width: calc(100% - 260px);
+        padding: 40px;
+      }
+
       .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
       }
-      h1 {
-        font-size: 1.8rem;
-        font-weight: 800;
-        margin: 0;
+
+      /* Page Container */
+      .page {
+        display: none;
+        animation: fadeIn 0.4s ease;
+      }
+      .page.active {
+        display: block;
       }
 
-      /* Dark Mode Toggle */
-      .toggle {
-        cursor: pointer;
-        padding: 10px 14px;
-        border-radius: 50%; /* Bulat */
-        background: var(--card);
-        box-shadow: var(--shadow-md);
-        transition: 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-      }
-      .toggle:hover {
-        opacity: 0.9;
-        box-shadow: var(--shadow-lg);
-      }
-      .toggle i {
-        color: var(--primary);
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
-      /* Dashboard Grid */
-      .dashboard {
+      /* Grid & Cards (Reuse from your code) */
+      .dashboard-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: 20px;
       }
 
-      /* Card Style */
       .card {
         background: var(--card);
         padding: 25px;
         border-radius: 18px;
-        text-align: left;
-        box-shadow: var(--shadow-md);
-        transition: 0.3s ease;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-lg);
+        box-shadow: var(--shadow);
+        transition: 0.3s;
       }
 
       .icon-wrapper {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background-color: var(--primary);
-        color: var(--card);
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 15px;
+        color: white;
       }
 
       .value {
-        font-size: 2.8rem;
+        font-size: 2.2rem;
         font-weight: 800;
-        color: var(--text); /* Nilai Utama lebih gelap */
-        transition: 0.3s ease;
         line-height: 1;
       }
-
       .label {
-        margin-top: 5px;
         color: var(--subtext);
-        font-size: 1rem;
+        margin-top: 8px;
         font-weight: 500;
       }
 
-      .status-good {
-        color: var(--good) !important;
-        font-weight: 700;
-      }
-      .status-bad {
-        color: var(--bad) !important;
-        font-weight: 700;
-      }
-      .airq-info {
-        color: var(--subtext);
-        font-size: 0.8rem;
-        margin-top: 10px;
-      }
-      .airq-raw {
-        font-weight: 600;
-      }
-
-      /* Chart Card */
-      .chart-container {
-        margin-top: 25px;
+      /* Chart Page Specific */
+      .full-chart-container {
         background: var(--card);
-        padding: 25px;
-        border-radius: 18px;
-        box-shadow: var(--shadow-md);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        height: 500px;
       }
 
-      .chart-container h3 {
-        margin-bottom: 20px;
-        font-weight: 700;
-        color: var(--text);
-        border-bottom: 2px solid rgba(0, 0, 0, 0.05);
-        padding-bottom: 10px;
+      /* Toggle Button */
+      .theme-toggle {
+        cursor: pointer;
+        background: var(--card);
+        border: none;
+        padding: 10px;
+        border-radius: 50%;
+        box-shadow: var(--shadow);
+        color: var(--primary);
       }
 
-      canvas {
-        /* Pastikan canvas tetap responsif di dalam kontainer */
-        max-width: 100%;
-        height: 350px !important;
+      .about-card {
+        background: var(--card);
+        padding: 40px;
+        border-radius: 20px;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 70px;
+          padding: 20px 10px;
+        }
+        .sidebar h2,
+        .nav-item span {
+          display: none;
+        }
+        .main-content {
+          margin-left: 70px;
+          width: calc(100% - 70px);
+        }
       }
     </style>
   </head>
-
   <body>
-    <div class="header">
-      <h1>🏥 Dashboard Monitoring Pasien</h1>
-      <div class="toggle" onclick="toggleDarkMode()">
-        <i data-feather="moon"></i>
+    <nav class="sidebar">
+      <h2>🏥 <span>SmartCare</span></h2>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <i data-feather="grid"></i> <span>Dashboard</span>
       </div>
-    </div>
+      <div class="nav-item" onclick="showPage('analytics')">
+        <i data-feather="bar-chart-2"></i> <span>Analisis Grafik</span>
+      </div>
+      <div class="nav-item" onclick="showPage('about')">
+        <i data-feather="info"></i> <span>Tentang Projek</span>
+      </div>
+    </nav>
 
-    <p
-      style="
-        margin-bottom: 25px;
-        color: var(--subtext);
-        font-weight: 500;
-        font-size: 0.95rem;
-      "
-    >
-      Pembaruan Terakhir:
-      <span id="timestamp" style="font-weight: 700">--:--</span>
-    </p>
+    <main class="main-content">
+      <div class="header">
+        <h1 id="page-title">Dashboard Utama</h1>
+        <button class="theme-toggle" onclick="toggleDarkMode()">
+          <i data-feather="moon"></i>
+        </button>
+      </div>
 
-    <div class="dashboard">
-      <div class="card">
-        <div class="icon-wrapper" style="background-color: var(--bad)">
-          <i data-feather="thermometer" style="width: 24px; height: 24px"></i>
+      <div id="dashboard" class="page active">
+        <p style="color: var(--subtext); margin-bottom: 20px">
+          Pembaruan Terakhir:
+          <span id="timestamp" style="font-weight: bold">--:--</span>
+        </p>
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="icon-wrapper" style="background: #ef4444">
+              <i data-feather="thermometer"></i>
+            </div>
+            <div class="value" id="temp-value">--</div>
+            <div class="label">Suhu Ruangan (°C)</div>
+          </div>
+          <div class="card">
+            <div class="icon-wrapper" style="background: #3b82f6">
+              <i data-feather="droplet"></i>
+            </div>
+            <div class="value" id="humi-value">--</div>
+            <div class="label">Kelembapan (%)</div>
+          </div>
+          <div class="card">
+            <div class="icon-wrapper" style="background: #6366f1">
+              <i data-feather="activity"></i>
+            </div>
+            <div class="value" id="motion-value">--</div>
+            <div class="label">Gerakan (Count)</div>
+          </div>
+          <div class="card">
+            <div class="icon-wrapper" style="background: #f59e0b">
+              <i data-feather="sun"></i>
+            </div>
+            <div class="value" id="light-status">--</div>
+            <div class="label">Status Cahaya</div>
+          </div>
         </div>
-        <div class="value" id="temp-value">--</div>
-        <div class="label">Suhu Tubuh (°C)</div>
-      </div>
 
-      <div class="card">
-        <div class="icon-wrapper" style="background-color: var(--primary)">
-          <i data-feather="droplet" style="width: 24px; height: 24px"></i>
+        <h3 style="margin-top: 30px">Status Indikator LED</h3>
+        <div
+          class="dashboard-grid"
+          style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr))"
+        >
+          <div class="card" style="padding: 15px; text-align: center">
+            <div id="led-red" style="font-weight: bold">OFF</div>
+            <div class="label" style="font-size: 0.8rem">LED Merah</div>
+          </div>
+          <div class="card" style="padding: 15px; text-align: center">
+            <div id="led-blue" style="font-weight: bold">OFF</div>
+            <div class="label" style="font-size: 0.8rem">LED Biru</div>
+          </div>
+          <div class="card" style="padding: 15px; text-align: center">
+            <div id="led-yellow" style="font-weight: bold">OFF</div>
+            <div class="label" style="font-size: 0.8rem">LED Kuning</div>
+          </div>
+          <div class="card" style="padding: 15px; text-align: center">
+            <div id="led-white" style="font-weight: bold">OFF</div>
+            <div class="label" style="font-size: 0.8rem">LED Putih</div>
+          </div>
         </div>
-        <div class="value" id="humi-value">--</div>
-        <div class="label">Kelembapan Ruangan (%)</div>
       </div>
 
-      <!-- Air quality sensor removed: not used in this setup -->
-
-      <div class="card">
-        <div class="icon-wrapper" style="background-color: var(--secondary)">
-          <i data-feather="activity" style="width: 24px; height: 24px"></i>
+      <div id="analytics" class="page">
+        <div class="full-chart-container">
+          <canvas id="multiChart"></canvas>
         </div>
-        <div class="value" id="motion-value">--</div>
-        <div class="label">Gerakan (count)</div>
       </div>
 
-      <div class="card">
-        <div class="icon-wrapper" style="background-color: #f59e0b">
-          <i data-feather="sun" style="width: 24px; height: 24px"></i>
+      <div id="about" class="page">
+        <div class="about-card">
+          <h2>Tentang Projek IoT</h2>
+          <p>
+            Projek ini dirancang untuk memantau kondisi lingkungan pasien secara
+            realtime menggunakan teknologi
+            <strong>Internet of Things (IoT)</strong>.
+          </p>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0" />
+          <h3>Fitur Utama:</h3>
+          <ul>
+            <li>Monitoring Suhu dan Kelembapan via Sensor DHT.</li>
+            <li>Deteksi gerakan pasien untuk keamanan tambahan.</li>
+            <li>Kontrol otomatis LED berdasarkan kondisi lingkungan.</li>
+            <li>Visualisasi data terintegrasi.</li>
+          </ul>
+          <p>Dibuat dengan ❤️ untuk sistem kesehatan yang lebih baik.</p>
         </div>
-        <div class="value" id="light-status">--</div>
-        <div class="label">Cahaya (Malem/Siang)</div>
-        <div class="airq-info">Nilai LDR: <span id="ldr-raw">--</span></div>
       </div>
-
-      <div class="card">
-        <div class="icon-wrapper" style="background-color: #ef4444">
-          <i data-feather="circle" style="width: 24px; height: 24px"></i>
-        </div>
-        <div class="value" id="led-red">--</div>
-        <div class="label">LED Merah (Suhu tinggi)</div>
-      </div>
-
-      <div class="card">
-        <div class="icon-wrapper" style="background-color: #3b82f6">
-          <i data-feather="circle" style="width: 24px; height: 24px"></i>
-        </div>
-        <div class="value" id="led-blue">--</div>
-        <div class="label">LED Biru (Gerakan berlebih)</div>
-      </div>
-
-      <div class="card">
-        <div class="icon-wrapper" style="background-color: #f59e0b">
-          <i data-feather="circle" style="width: 24px; height: 24px"></i>
-        </div>
-        <div class="value" id="led-yellow">--</div>
-        <div class="label">LED Kuning (Humidity abnormal)</div>
-      </div>
-
-      <div class="card">
-        <div class="icon-wrapper" style="background-color: #f3f4f6">
-          <i data-feather="circle" style="width: 24px; height: 24px"></i>
-        </div>
-        <div class="value" id="led-white">--</div>
-        <div class="label">LED Putih (Malam hari)</div>
-      </div>
-    </div>
-
-    <div class="chart-container">
-      <h3>📈 Grafik Realtime Suhu Tubuh</h3>
-      <canvas id="tempChart"></canvas>
-    </div>
+    </main>
 
     <script>
-      feather.replace(); // load icons
+      feather.replace();
 
-      /* Dark Mode */
+      // Navigasi Halaman
+      function showPage(pageId) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-item")
+          .forEach((n) => n.classList.remove("active"));
+
+        document.getElementById(pageId).classList.add("active");
+        event.currentTarget.classList.add("active");
+
+        const titles = {
+          dashboard: "Dashboard Utama",
+          analytics: "Analisis Grafik Terpadu",
+          about: "Tentang Projek",
+        };
+        document.getElementById("page-title").innerText = titles[pageId];
+      }
+
       function toggleDarkMode() {
-        const body = document.body;
-        body.classList.toggle("dark");
-        // Update chart colors on toggle
-        updateChartColors();
+        document.body.classList.toggle("dark");
       }
 
-      /* Fungsi untuk mendapatkan warna dari CSS variabel */
-      function getCssVar(name) {
-        return getComputedStyle(document.body).getPropertyValue(name).trim();
-      }
-
-      /* Fungsi untuk mengupdate warna chart berdasarkan mode */
-      function updateChartColors() {
-        const textColor = getCssVar("--text");
-        const borderColor = getCssVar("--primary");
-
-        tempChart.options.scales.x.ticks.color = textColor;
-        tempChart.options.scales.y.ticks.color = textColor;
-        tempChart.data.datasets[0].borderColor = borderColor;
-
-        // Force redraw
-        tempChart.update();
-      }
-
-      /* CHART.JS SETUP */
-      const ctx = document.getElementById("tempChart").getContext("2d");
-      const tempChart = new Chart(ctx, {
+      // Setup Multi Chart
+      const ctx = document.getElementById("multiChart").getContext("2d");
+      const multiChart = new Chart(ctx, {
         type: "line",
         data: {
           labels: [],
           datasets: [
             {
-              label: "Suhu Tubuh (°C)",
+              label: "Suhu (°C)",
               data: [],
-              borderWidth: 3,
-              borderColor: getCssVar("--primary"),
-              fill: false,
-              tension: 0.4, // Kurva yang lebih halus
-              pointRadius: 4,
-              pointBackgroundColor: getCssVar("--primary"),
+              borderColor: "#ef4444",
+              tension: 0.4,
+            },
+            {
+              label: "Kelembapan (%)",
+              data: [],
+              borderColor: "#3b82f6",
+              tension: 0.4,
+            },
+            {
+              label: "Gerakan",
+              data: [],
+              borderColor: "#6366f1",
+              tension: 0.4,
+              stepped: true,
             },
           ],
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false, // Memungkinkan kontrol height
-          plugins: { legend: { display: false } },
+          maintainAspectRatio: false,
           scales: {
-            x: {
-              grid: { display: false },
-              ticks: { color: getCssVar("--text") },
-            },
-            y: {
-              min: 35, // Batas bawah suhu tubuh yang realistis
-              max: 42, // Batas atas suhu tubuh yang realistis
-              ticks: { color: getCssVar("--text") },
-            },
+            y: { beginAtZero: true },
           },
         },
       });
 
-      // Inisialisasi warna chart
-      updateChartColors();
-
-      /* REALTIME DATA FETCH */
-      function fetchLatestData() {
-        // Fetch latest data from backend
+      // Simulasi Fetch Data (Ganti dengan URL API Anda)
+      function updateData() {
         fetch("/api/latest_data")
           .then((res) => res.json())
           .then((data) => {
-            if (!data || data.status === "no_data") return;
+            if (!data) return;
 
-            // Temperature / Humidity / Timestamp
-            if (data.temperature != null) {
-              document.getElementById("temp-value").textContent = Number(
-                data.temperature
-              ).toFixed(1);
-            }
-            if (data.humidity != null) {
-              document.getElementById("humi-value").textContent = Number(
-                data.humidity
-              ).toFixed(1);
-            }
-            document.getElementById("timestamp").textContent =
-              data.timestamp || new Date().toLocaleTimeString();
+            // Update UI Dashboard
+            document.getElementById("temp-value").innerText = data.temperature;
+            document.getElementById("humi-value").innerText = data.humidity;
+            document.getElementById("motion-value").innerText =
+              data.motion_count;
+            document.getElementById("light-status").innerText =
+              data.ldr < 400 ? "Malam" : "Siang";
+            document.getElementById("timestamp").innerText =
+              new Date().toLocaleTimeString();
 
-            // Air quality removed from UI (not used)
-
-            // motion
-            const motionEl = document.getElementById("motion-value");
-            motionEl.textContent =
-              data.motion_count != null
-                ? data.motion_count
-                : data.motion_detected
-                ? "1"
-                : "0";
-
-            // light / LDR
-            const ldrRaw = document.getElementById("ldr-raw");
-            ldrRaw.textContent =
-              data.ldr != null ? Number(data.ldr).toFixed(0) : "--";
-            const lightStatusEl = document.getElementById("light-status");
-            if (data.ldr != null) {
-              const ldrVal = Number(data.ldr);
-              lightStatusEl.textContent = ldrVal < 400 ? "MALAM" : "SIANG";
-            }
-
-            // LED states
-            function setLedText(id, val) {
+            // Update LED Colors
+            const updateLed = (id, state) => {
               const el = document.getElementById(id);
-              if (!el) return;
-              el.textContent = val ? "ON" : "OFF";
-              el.className = val ? "value status-bad" : "value";
-            }
+              el.innerText = state ? "ON" : "OFF";
+              el.style.color = state ? "var(--good)" : "var(--subtext)";
+            };
+            updateLed("led-red", data.led_red);
+            updateLed("led-blue", data.led_blue);
 
-            setLedText("led-red", data.led_red);
-            setLedText("led-blue", data.led_blue);
-            setLedText("led-yellow", data.led_yellow);
-            setLedText("led-white", data.led_white);
+            // Update Multi Chart
+            const now = new Date().toLocaleTimeString();
+            multiChart.data.labels.push(now);
+            multiChart.data.datasets[0].data.push(data.temperature);
+            multiChart.data.datasets[1].data.push(data.humidity);
+            multiChart.data.datasets[2].data.push(data.motion_count);
 
-            // Update chart with temperature
-            if (data.temperature != null) {
-              const timeLabel = new Date().toLocaleTimeString("id-ID", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              });
-              tempChart.data.labels.push(timeLabel);
-              tempChart.data.datasets[0].data.push(Number(data.temperature));
-              if (tempChart.data.labels.length > 15) {
-                tempChart.data.labels.shift();
-                tempChart.data.datasets[0].data.shift();
-              }
-              tempChart.update();
+            if (multiChart.data.labels.length > 20) {
+              multiChart.data.labels.shift();
+              multiChart.data.datasets.forEach((d) => d.data.shift());
             }
+            multiChart.update();
           })
-          .catch((err) => {
-            console.error("fetch latest_data failed", err);
-          });
+          .catch((e) => console.log("Waiting for API..."));
       }
 
-      fetchLatestData();
-      setInterval(fetchLatestData, 5000); // Update setiap 5 detik
+      setInterval(updateData, 5000);
     </script>
   </body>
 </html>
