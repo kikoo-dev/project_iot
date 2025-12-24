@@ -30,15 +30,23 @@ def post_data():
         data = request.json
 
         temperature = data.get('temperature')
+        humidity = data.get('humidity')
         gas_level = data.get('gas_level')
         light_level = data.get('light_level')
         motion_detected = data.get('motion_detected')
+        # Optional/extended fields
+        air_quality = data.get('air_quality')
+        distance = data.get('distance')
+        sound_level = data.get('sound_level')
+        mq135 = data.get('mq135')
+        ldr = data.get('ldr')
+        mic = data.get('mic')
 
-        # Validasi data
+        # Basic validation: required core fields
         if None in [temperature, gas_level, light_level, motion_detected]:
             return jsonify({
                 'status': 'error',
-                'message': 'Missing data fields'
+                'message': 'Missing core data fields (temperature, gas_level, light_level, motion_detected)'
             }), 400
 
         db: Session = get_db()
@@ -47,7 +55,14 @@ def post_data():
             temperature=temperature,
             gas_level=gas_level,
             light_level=light_level,
-            motion_detected=motion_detected
+            motion_detected=motion_detected,
+            humidity=humidity,
+            air_quality=air_quality,
+            distance=distance,
+            sound_level=sound_level,
+            mq135=mq135,
+            ldr=ldr,
+            mic=mic
         )
 
         db.add(sensor_data)
@@ -82,9 +97,16 @@ def get_latest_data():
         return jsonify({
             'id': data.id,
             'temperature': data.temperature,
+            'humidity': data.humidity,
             'gas_level': data.gas_level,
             'light_level': data.light_level,
             'motion_detected': data.motion_detected,
+            'air_quality': data.air_quality,
+            'distance': data.distance,
+            'sound_level': data.sound_level,
+            'mq135': data.mq135,
+            'ldr': data.ldr,
+            'mic': data.mic,
             'timestamp': data.created_at.strftime('%H:%M:%S, %d %b')
         })
 
@@ -92,4 +114,4 @@ def get_latest_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
